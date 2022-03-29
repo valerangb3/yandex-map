@@ -36,13 +36,29 @@
                 // от 0 (весь мир) до 19.
                 zoom: 7
             });
-            var myGeoObject = new ymaps.GeoObject({
+            var coords = [
+                [55.8, 37.8],
+                [54.8, 36.8]
+            ];
+            var myCollection = new ymaps.GeoObjectCollection();
+            for (var i = 0; i < coords.length; i++) {
+                myCollection.add(new ymaps.Placemark(coords[i]));
+            }
+            myMap.geoObjects.add(myCollection);
+            /*var myGeoObject = new ymaps.GeoObject({
                 geometry: {
                     type: "Point",
                     coordinates: [55.8, 37.8]
                 }
             });
+            var myGeoObject1 = new ymaps.GeoObject({
+                geometry: {
+                    type: "Point",
+                    coordinates: [54.8, 36.8]
+                }
+            });
             myMap.geoObjects.add(myGeoObject);
+            myMap.geoObjects.add(myGeoObject1);*/
         }
     </script>
 </body>
