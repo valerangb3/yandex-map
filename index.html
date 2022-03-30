@@ -44,7 +44,12 @@
             for (var i = 0; i < coords.length; i++) {
                 myCollection.add(new ymaps.Placemark(coords[i]));
             }
+            console.log(myMap.geoObjects);
             myMap.geoObjects.add(myCollection);
+            myMap.geoObjects.events.add('click', function(e) {
+                console.log(e.get('target'));
+                e.get('target').options.set('preset', 'islands#greenIcon');
+            });
             /*var myGeoObject = new ymaps.GeoObject({
                 geometry: {
                     type: "Point",
