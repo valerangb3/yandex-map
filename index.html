@@ -35,7 +35,7 @@
                 // Уровень масштабирования. Допустимые значения:
                 // от 0 (весь мир) до 19.
                 zoom: 7
-            });
+            }), obj_;
             var coords = [
                 [55.8, 37.8],
                 [54.8, 36.8]
@@ -47,8 +47,11 @@
             console.log(myMap.geoObjects);
             myMap.geoObjects.add(myCollection);
             myMap.geoObjects.events.add('click', function(e) {
-                console.log(e.get('target'));
-                e.get('target').options.set('preset', 'islands#greenIcon');
+                if (obj_ !== undefined) {
+                    obj_.options.set('preset', 'islands#blueIcon');
+                }
+                obj_ = e.get('target');
+                obj_.options.set('preset', 'islands#greenIcon');
             });
             /*var myGeoObject = new ymaps.GeoObject({
                 geometry: {
