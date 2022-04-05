@@ -25,6 +25,25 @@
         // загрузятся все компоненты API, а также когда будет готово DOM-дерево.
         ymaps.ready(init);
         function init(){
+            let mapParams = {
+                "mapId": "map",
+            };
+            let points = [
+                {key: 223, coordinates: [55.8, 37.8]},
+                {key: 224, coordinates: [54.8, 36.8]},
+                {key: 225, coordinates: [52.8, 31.8]},
+                {key: 226, coordinates: [44.8, 38.8]},
+                {key: 227, coordinates: [24.8, 66.8]},
+                {key: 228, coordinates: [53.8, 76.8]},
+                {key: 229, coordinates: [52.1, 46.2]},
+                {key: 230, coordinates: [55.7, 37.2]},
+                {key: 231, coordinates: [52.7, 37.7]},
+                {key: 232, coordinates: [52.8, 37.6]},
+                {key: 233, coordinates: [52.9, 37.1]},
+                {key: 234, coordinates: [53.7, 36.6]},
+                {key: 235, coordinates: [54.4, 35.7]},
+                {key: 236, coordinates: [53.3, 36.1]},
+            ];
             // Создание карты.
             var myMap = new ymaps.Map("map", {
                 // Координаты центра карты.
@@ -34,17 +53,16 @@
                 center: [55.76, 37.64],
                 // Уровень масштабирования. Допустимые значения:
                 // от 0 (весь мир) до 19.
-                zoom: 7
+                zoom: 6
             }), obj_;
-            var coords = [
-                [55.8, 37.8],
-                [54.8, 36.8]
-            ];
+            let searchControl = myMap.controls.get('searchControl');
             var myCollection = new ymaps.GeoObjectCollection();
-            for (var i = 0; i < coords.length; i++) {
-                myCollection.add(new ymaps.Placemark(coords[i]));
+            for (var i = 0; i < points.length; i++) {
+                myCollection.add(new ymaps.Placemark(points[i].coordinates));
             }
-            console.log(myMap.geoObjects);
+            searchControl.events.add('resultselect', function(e) {
+                console.log(searchControl.getResponseMetaData());
+            });
             myMap.geoObjects.add(myCollection);
             myMap.geoObjects.events.add('click', function(e) {
                 if (obj_ !== undefined) {
