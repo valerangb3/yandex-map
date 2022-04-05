@@ -61,7 +61,14 @@
                 myCollection.add(new ymaps.Placemark(points[i].coordinates));
             }
             searchControl.events.add('resultselect', function(e) {
-                console.log(searchControl.getResponseMetaData());
+                // console.log(e.get('index'));
+                // console.log(searchControl.getResultsArray());
+                let results = searchControl.getResultsArray();
+                let selected = e.get('index');
+                console.log(results[selected].geometry.getCoordinates());
+                // console.log(searchControl.getResult(e.get('index')/*searchControl.getSelectedIndex()*/).geometry);
+                // let results = searchControl.getResponseMetaData();
+                // console.log(searchControl.state);
             });
             myMap.geoObjects.add(myCollection);
             myMap.geoObjects.events.add('click', function(e) {
