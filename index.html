@@ -65,7 +65,9 @@
                 // console.log(searchControl.getResultsArray());
                 let results = searchControl.getResultsArray();
                 let selected = e.get('index');
-                console.log(results[selected].geometry.getCoordinates());
+                let cityCoordinates = results[selected].geometry.getCoordinates();
+                let circle = new ymaps.Circle([cityCoordinates, 10000], null);
+                myMap.geoObjects.add(circle);
                 // console.log(searchControl.getResult(e.get('index')/*searchControl.getSelectedIndex()*/).geometry);
                 // let results = searchControl.getResponseMetaData();
                 // console.log(searchControl.state);
