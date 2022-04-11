@@ -30,6 +30,7 @@
             this.myCollection = null,
             this.myMap = null,
             this.searchControl = null,
+            this.circle = null,
             this.currentCoordinates = [];
             this.parameters = parameters,
             this.initialization = function() {
@@ -46,10 +47,12 @@
                 }).then(
                     (result) => {
                         let currentCoordinates = result.geoObjects.get(0).geometry.getCoordinates();
-                        console.log(result.geoObjects.get(0).properties.get('text'));
-                        console.log(result.geoObjects.get(0).geometry.getCoordinates());
+                        // console.log(result.geoObjects.get(0).properties.get('text'));
+                        // console.log(result.geoObjects.get(0).geometry.getCoordinates());
                         if (currentCoordinates.length) {
                             this.currentCoordinates = currentCoordinates;
+                            this.myMap.setCenter(this.currentCoordinates);
+                            this.myMap.geoObjects.add(result.geoObjects);
                         }
                         this.drawPoints();
                         this.drawCircle();
@@ -76,16 +79,21 @@
                 });
             },
             this.drawCircle = function() {
+                let instance = this;
                 this.searchControl.events.add('resultselect', function(e) {
-                    let results = this.searchControl.getResultsArray();
+                    let results = instance.searchControl.getResultsArray();
                     let selected = e.get('index');
-                    let cityCoordinates = results[selected].geometry.getCoordinates();
-                    // if (this.currentCoordinates.length) {
-                    //     cityCoordinates = this.currentCoordinates;
-                    // }
-                    let circle = new ymaps.Circle([cityCoordinates, 10000], null);
-                    this.myMap.geoObjects.add(circle);
+                    instance.currentCoordinates = results[selected].geometry.getCoordinates();
+                    if (instance.circle !== null) {
+                    
+                        instance.circle.geometry.setCoordinates(instance.currentCoordinates);
+                        console.log(instance.myMap.geoObjects);
+                    }
                 });
+                if (instance.circle === null) {
+                    instance.circle = new ymaps.Circle([instance.currentCoordinates, 100000], null);
+                    instance.myMap.geoObjects.add(instance.circle);
+                }
             }
         }
         let points = [
