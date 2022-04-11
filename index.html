@@ -24,34 +24,68 @@
         // Функция ymaps.ready() будет вызвана, когда
         // загрузятся все компоненты API, а также когда будет готово DOM-дерево.
         function YandexMap(parameters) {
+            this.points = null,
+            this.location = null,
+            this.mapOptions = null,
+            this.myCollection = null,
+            this.myMap = null,
+            this.searchControl = null,
+            this.currentCoordinates = [];
             this.parameters = parameters,
             this.initialization = function() {
-                let myMap = new ymaps.Map(this.parameters.mapId, this.parameters.map), 
-                    myCollection, searchControl, obj_;
-                myCollection = new ymaps.GeoObjectCollection();
-                searchControl = myMap.controls.get('searchControl');
+                this.myMap = new ymaps.Map(this.parameters.mapId, this.parameters.map);
+                this.myCollection = new ymaps.GeoObjectCollection();
+                this.searchControl = this.myMap.controls.get('searchControl');
+                this.location = ymaps.geolocation;
+            },
+            this.drawMap = function() {
+                this.initialization();
+                this.location.get({
+                    mapStateAutoPlay: true,
+                    provider: 'yandex'
+                }).then(
+                    (result) => {
+                        let currentCoordinates = result.geoObjects.get(0).geometry.getCoordinates();
+                        console.log(result.geoObjects.get(0).properties.get('text'));
+                        console.log(result.geoObjects.get(0).geometry.getCoordinates());
+                        if (currentCoordinates.length) {
+                            this.currentCoordinates = currentCoordinates;
+                        }
+                        this.drawPoints();
+                        this.drawCircle();
+                    },
+                    (err) => {
+                        console.log('Произошла ошибка определения местоположения');
+                    }
+                );
+                
+            },
+            this.drawPoints = function() {
+                let obj;
                 for (let i = 0; i < this.parameters.points.length; i++) {
-                    myCollection.add(new ymaps.Placemark(this.parameters.points[i].coordinates));
+                    this.myCollection.add(new ymaps.Placemark(this.parameters.points[i].coordinates));
                 }
-                myMap.geoObjects.add(myCollection);
-
-
-                searchControl.events.add('resultselect', function(e) {
-                    let results = searchControl.getResultsArray();
+                this.myMap.geoObjects.add(this.myCollection);
+                //событие на изменение цвета иконки
+                this.myMap.geoObjects.events.add('click', function(e) {
+                    if (obj !== undefined) {
+                        obj.options.set('preset', 'islands#blueIcon');
+                    }
+                    obj = e.get('target');
+                    obj.options.set('preset', 'islands#greenIcon');
+                });
+            },
+            this.drawCircle = function() {
+                this.searchControl.events.add('resultselect', function(e) {
+                    let results = this.searchControl.getResultsArray();
                     let selected = e.get('index');
                     let cityCoordinates = results[selected].geometry.getCoordinates();
+                    // if (this.currentCoordinates.length) {
+                    //     cityCoordinates = this.currentCoordinates;
+                    // }
                     let circle = new ymaps.Circle([cityCoordinates, 10000], null);
-                    myMap.geoObjects.add(circle);
+                    this.myMap.geoObjects.add(circle);
                 });
-
-                myMap.geoObjects.add(myCollection);
-                myMap.geoObjects.events.add('click', function(e) {
-                if (obj_ !== undefined) {
-                    obj_.options.set('preset', 'islands#blueIcon');
-                }
-                obj_ = e.get('target');
-                obj_.options.set('preset', 'islands#greenIcon');
-            });
             }
         }
         let points = [
@@ -81,7 +115,7 @@
         let ym = new YandexMap(parameters);
         // console.log(ym.parameters);
 
-        ymaps.ready(ym.initialization.bind(ym));
+        ymaps.ready(ym.drawMap.bind(ym));
         function init(){
             let mapParams = {
                 "mapId": "map",
