@@ -32,6 +32,9 @@
             this.searchControl = null,
             this.circle = null,
             this.position = null,
+            this.countNearestPoints = null,
+            this.radius = null,
+            this.nearestPoints = [],
             this.currentCoordinates = [],
             this.pointsDist = [],
             this.parameters = parameters,
@@ -40,6 +43,14 @@
                 this.myCollection = new ymaps.GeoObjectCollection();
                 this.searchControl = this.myMap.controls.get('searchControl');
                 this.location = ymaps.geolocation;
+                if (this.parameters.points.length && this.points === null) {
+                    this.points = this.parameters.points;
+                }
+                if (this.parameters.extentionOptions !== undefined) {
+                    if (this.parameters.extentionOptions.countNearestPoints !== undefined) {
+                        this.countNearestPoints = this.parameters.extentionOptions.countNearestPoints;
+                    }
+                }
             },
             this.drawMap = function() {
                 this.initialization();
@@ -50,7 +61,7 @@
                     (result) => {
                         let currentCoordinates = result.geoObjects.get(0).geometry.getCoordinates();
                         this.position = currentCoordinates;
-                        console.log(this.position);
+                        // console.log(this.position);
                         // console.log(result.geoObjects.get(0).properties.get('text'));
                         // console.log(result.geoObjects.get(0).geometry.getCoordinates());
                         if (currentCoordinates.length) {
@@ -59,6 +70,10 @@
                             this.myMap.geoObjects.add(result.geoObjects);
                         }
                         this.drawPoints();
+                        this.updateDistance();
+                        this.getClosestObjects();
+                        console.log(this.pointsDist);
+                        console.log(this.countNearestPoints);
                         this.drawCircle();
                     },
                     (err) => {
@@ -69,8 +84,8 @@
             },
             this.drawPoints = function() {
                 let obj;
-                for (let i = 0; i < this.parameters.points.length; i++) {
-                    this.myCollection.add(new ymaps.Placemark(this.parameters.points[i].coordinates));
+                for (let i = 0; i < this.points.length; i++) {
+                    this.myCollection.add(new ymaps.Placemark(this.points[i].coordinates));
                 }
                 this.myMap.geoObjects.add(this.myCollection);
                 //событие на изменение цвета иконки
@@ -81,6 +96,36 @@
                     obj = e.get('target');
                     obj.options.set('preset', 'islands#greenIcon');
                 });
+            },
+            this.getClosestObjects = function () {
+                this.nearestPoints = [];
+                this.radius = 0;
+                if (!this.position)
+                    return false;
+                if (!this.points)
+                    return false;
+                this.pointsDist.sort(this.pointsDistanceSort);
+                let count = 0;
+                for (let key in this.pointsDist) {
+                    if (!this.pointsDist.hasOwnProperty(key)) {
+                        continue;
+                    }
+                    count++;
+                    this.nearestPoints.push(this.pointsDist[key].id);
+                    if (this.radius < this.pointsDist[key].dist) {
+                        this.radius = this.pointsDist[key].dist;
+                    }
+                    if (this.countNearestPoints <= count) {
+                        break;
+                    }
+                }
+                if (this.radius != 0) {
+                    this.radius = this.radius + 5000;
+                }
+                return true;
+            },
+            this.pointsDistanceSort = function (point1, point2) {
+                return point1.dist - point2.dist;
             },
             this.drawCircle = function() {
                 let instance = this;
@@ -95,10 +140,27 @@
                     }
                 });
                 if (instance.circle === null) {
-                    instance.circle = new ymaps.Circle([instance.currentCoordinates, 100000], null);
+                    instance.circle = new ymaps.Circle([instance.currentCoordinates, this.radius], null);
                     instance.myMap.geoObjects.add(instance.circle);
                 }
             }
+            this.updateDistance = function() {
+                this.pointsDist = [];
+                if (!this.position)
+                    return false;
+                if (!this.points)
+                    return false;
+                for (let id in this.points) {
+                    if (!this.points.hasOwnProperty(id)) {
+                        continue;
+                    }
+                    this.pointsDist.push({
+                        dist: this.getDistance(this.points[id].coordinates, this.position),
+                        id: this.points[id].key,
+                    });
+                }
+                return true;
+            },
             this.getDistance = function (coords, position) {
                 var EARTH_RADIUS = 6372795;
 
@@ -147,6 +209,9 @@
                 zoom: 6,
             },
             points: points,
+            extentionOptions: {
+                countNearestPoints: 15,
+            }
         };
         let ym = new YandexMap(parameters);
         // console.log(ym.parameters);
