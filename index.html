@@ -31,7 +31,9 @@
             this.myMap = null,
             this.searchControl = null,
             this.circle = null,
-            this.currentCoordinates = [];
+            this.position = null,
+            this.currentCoordinates = [],
+            this.pointsDist = [],
             this.parameters = parameters,
             this.initialization = function() {
                 this.myMap = new ymaps.Map(this.parameters.mapId, this.parameters.map);
@@ -47,6 +49,8 @@
                 }).then(
                     (result) => {
                         let currentCoordinates = result.geoObjects.get(0).geometry.getCoordinates();
+                        this.position = currentCoordinates;
+                        console.log(this.position);
                         // console.log(result.geoObjects.get(0).properties.get('text'));
                         // console.log(result.geoObjects.get(0).geometry.getCoordinates());
                         if (currentCoordinates.length) {
@@ -94,6 +98,30 @@
                     instance.circle = new ymaps.Circle([instance.currentCoordinates, 100000], null);
                     instance.myMap.geoObjects.add(instance.circle);
                 }
+            }
+            this.getDistance = function (coords, position) {
+                var EARTH_RADIUS = 6372795;
+
+                // перевести координаты в радианы
+                let lat1 = coords[0] * Math.PI / 180;
+                let lat2 = position[0] * Math.PI / 180;
+                let long1 = coords[1] * Math.PI / 180;
+                let long2 = position[1] * Math.PI / 180;
+
+                // косинусы и синусы широт и разницы долгот
+                let cl1 = Math.cos(lat1);
+                let cl2 = Math.cos(lat2);
+                let sl1 = Math.sin(lat1);
+                let sl2 = Math.sin(lat2);
+                let delta = long2 - long1;
+                let cdelta = Math.cos(delta);
+                let sdelta = Math.sin(delta);
+
+                // вычисления длины большого круга
+                let y = Math.sqrt(Math.pow(cl2 * sdelta, 2) + Math.pow(cl1 * sl2 - sl1 * cl2 * cdelta, 2));
+                let x = sl1 * sl2 + cl1 * cl2 * cdelta;
+
+                return Math.atan2(y, x) * EARTH_RADIUS;
             }
         }
         let points = [
