@@ -60,6 +60,7 @@
                 }).then(
                     (result) => {
                         let currentCoordinates = result.geoObjects.get(0).geometry.getCoordinates();
+                        console.log({currentCoordinates: currentCoordinates});
                         this.position = currentCoordinates;
                         // console.log(this.position);
                         // console.log(result.geoObjects.get(0).properties.get('text'));
@@ -72,8 +73,6 @@
                         this.drawPoints();
                         this.updateDistance();
                         this.getClosestObjects();
-                        console.log(this.pointsDist);
-                        console.log(this.countNearestPoints);
                         this.drawCircle();
                     },
                     (err) => {
@@ -133,12 +132,18 @@
                     let results = instance.searchControl.getResultsArray();
                     let selected = e.get('index');
                     instance.currentCoordinates = results[selected].geometry.getCoordinates();
+                    console.log({currentCoordinates: instance.currentCoordinates});
+                    //**
+                    //если мы изменили местоположение, то необходимо заново произвести расчет ближайших точек
+                    //и самая дальняя точка будет новым радиусом
+                    //т.е. необходимо сначала обнулить данные, затем производить расчет
+                    //т.к. по идее должен меняться радиус
+                    //**
                     if (instance.circle !== null) {
-                    
                         instance.circle.geometry.setCoordinates(instance.currentCoordinates);
-                        console.log(instance.myMap.geoObjects);
                     }
                 });
+                console.log({currentCoordinates: instance.currentCoordinates, radius: this.radius, nearestPoints: this.nearestPoints});
                 if (instance.circle === null) {
                     instance.circle = new ymaps.Circle([instance.currentCoordinates, this.radius], null);
                     instance.myMap.geoObjects.add(instance.circle);
@@ -210,7 +215,7 @@
             },
             points: points,
             extentionOptions: {
-                countNearestPoints: 15,
+                countNearestPoints: 10,
             }
         };
         let ym = new YandexMap(parameters);
