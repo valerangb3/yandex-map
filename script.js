@@ -83,6 +83,7 @@ BX.namespace('BX.mapMarkersComponent');
          * Initialization of map_markers component js
          */
         init: function (parameters) {
+            console.log('foo bar');
             var instance = this;
             instance.getParams();
             instance.params = parameters.params || {};
