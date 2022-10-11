@@ -1,5 +1,5 @@
 BX.namespace('BX.mapMarkersComponent');
-
+//
 (function () {
     'use strict';
     var iconCoeff = 0.8;
